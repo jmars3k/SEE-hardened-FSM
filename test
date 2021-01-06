@@ -1,0 +1,29 @@
+if {[file exists work]} {
+    vdel -lib work -all
+    vlib work
+} else {
+  vlib work
+}
+
+# Compile design_components
+vcom  -explicit -work work {see_hardened_FSM.vhd}
+
+# Compile testbench files
+vlog  {see_hardened_FSM_TB.sv}
+
+#   Load the simulation
+vsim work.see_hardened_FSM_tb
+
+#   Load the waveform format file
+log -r /*
+do wave.do
+
+#force -freeze sim:/tb_flash_controller/uut1/boot_cmplt 1
+#run 20 ns
+#noforce sim:/tb_qprime_pci_asic_top/pci_par
+
+force {/see_hardened_FSM_tb/see_hardened_FSM_inst/next_state(2)} 1 -deposit @19.99us -cancel @20.035us
+#force {/see_hardened_FSM_tb/see_hardened_FSM_inst/state(2)} 1 -deposit @19.995us -cancel @20.040us
+
+# Run Sim
+run 100 us
